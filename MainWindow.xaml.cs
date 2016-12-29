@@ -134,15 +134,5 @@ namespace PremierLeagueDashboardApp
                 else return win;
             }
         }
-
-        private void progressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-
-        }
-
-        private void table_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
     }
 }
