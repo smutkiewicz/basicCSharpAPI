@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -59,12 +59,7 @@ namespace PremierLeagueDashboardApp
         {
             if (tableList.standing != null)
             {
-                foreach (Club c in tableList.standing)
-                {
-                    ListViewItem item = new ListViewItem();
-                    item.Content = c.toString();
-                    table.Items.Add(item);
-                }
+                table.ItemsSource = tableList.standing;
             }
         }
 
@@ -73,6 +68,7 @@ namespace PremierLeagueDashboardApp
             if(teamPlayers != null)
             {
                 dataGrid.ItemsSource = teamPlayers.players;
+                dataGrid.IsReadOnly = true;
             }
         }
 
@@ -80,20 +76,41 @@ namespace PremierLeagueDashboardApp
         {
             if (allFixturesList.fixtures != null)
             {
-                Fixture p = allFixturesList.fixtures.ElementAt(0);
+                Fixture p = allFixturesList.fixtures.ElementAt(0); // last match
 
                 Stack<string> stack = new Stack<string>();
                 Stack<int> goalsStack = new Stack<int>();
 
                 foreach (Fixture f in allFixturesList.fixtures)
                 {
-                    if (f.status == "SCHEDULED")
+                    if (f.status == "SCHEDULED" || f.status == "TIMED")
                     {
+                        // live match
+                        if(f.status == "TIMED")
+                        {
+                            nextFixtureGroupBox.Header = "Live matchday";
+
+                            if(f.result.goalsHomeTeam != null && f.result.goalsAwayTeam != null)
+                            {
+                                resultTextBlock.Text = f.result.goalsHomeTeam+" : "+f.result.goalsAwayTeam;
+                            }
+                            else
+                            {
+                                resultTextBlock.Text = "0 : 0";
+                            }
+                        }
+                        else
+                        {
+                            nextFixtureGroupBox.Header = "Next fixture";
+                            resultTextBlock.Text = "- : -";
+                        }
+
+                        // scheduled match
                         teamsTextBlock.Text = f.homeTeamName + " vs " + f.awayTeamName;
-                        resultLastTextBlock.Text = "- : -";
                         matchdayTextBlock.Text = "Matchday: " + f.matchday;
                         timeTextBlock.Text = f.date.Replace('T', ' ');
 
+                        // last match
                         teamsLastTextBlock.Text = p.homeTeamName + " vs " + p.awayTeamName;
                         resultLastTextBlock.Text = p.result.goalsHomeTeam + " : " + p.result.goalsAwayTeam;
                         matchdayLastTextBlock.Text = "Matchday: " + p.matchday;
@@ -107,7 +124,7 @@ namespace PremierLeagueDashboardApp
                     }
                 }
 
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     if (stack.Any()) formTextBlock.Text = stack.Pop() + " " + formTextBlock.Text;
                     else break;
@@ -133,6 +150,16 @@ namespace PremierLeagueDashboardApp
                 else if (home == away) return draw;
                 else return win;
             }
+        }
+
+        private void progressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+
+        }
+
+        private void table_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }
