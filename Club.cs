@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +8,10 @@ namespace PremierLeagueDashboardApp
 {
     public class Club
     {
-        public int position { get; set; }
-        public string teamName { get; set; }
+        public int position;
+        public string teamName;
         public int teamId { get; set; }
-        public int playedGames { get; set; }
+        public int playedGames;
         public string crestURI { get; set; }
         public int points { get; set; }
         public int goals { get; set; }
@@ -28,16 +28,68 @@ namespace PremierLeagueDashboardApp
             return position + ". " + teamName + " - " + points +" pts";
         }
 
-        public string CrestURI
+        public string TeamName
         {
             get
             {
-                return crestURI;
+                return teamName;
             }
 
             set
             {
-                crestURI = value;
+                teamName = value;
+            }
+        }
+
+        public int Position
+        {
+            get
+            {
+                return position;
+            }
+
+            set
+            {
+                position = value;
+            }
+        }
+
+        public int PlayedGames
+        {
+            get
+            {
+                return playedGames;
+            }
+
+            set
+            {
+                playedGames = value;
+            }
+        }
+
+        public int Points
+        {
+            get
+            {
+                return points;
+            }
+
+            set
+            {
+                points = value;
+            }
+        }
+
+        public int GoalDifference
+        {
+            get
+            {
+                return goalDifference;
+            }
+
+            set
+            {
+                goalDifference = value;
             }
         }
     }
