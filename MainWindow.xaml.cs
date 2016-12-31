@@ -1,17 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace PremierLeagueDashboardApp
 {
@@ -35,14 +26,23 @@ namespace PremierLeagueDashboardApp
         private async void Window_Initialized(object sender, EventArgs e)
         {
             ourTeamName = "Manchester United FC";
-            allFixturesList = await NetTasks.GetAllFixtures();
-            initFixturesPanel();
-            team = await NetTasks.GetTeam();
-            initTeam();
-            teamPlayers = await NetTasks.GetPlayers();
-            initPlayersList();
-            tableList = await NetTasks.GetTable();
-            initTable();
+            try
+            {
+                allFixturesList = await NetTasks.GetAllFixtures();
+                initFixturesPanel();
+                team = await NetTasks.GetTeam();
+                initTeam();
+                teamPlayers = await NetTasks.GetPlayers();
+                initPlayersList();
+                tableList = await NetTasks.GetTable();
+                initTable();
+            }
+            catch
+            {
+                MessageBox.Show("You've probably reached your request limit or have problems with connection. Try later.", 
+                    "Connection failed");
+            }
+
             progressBar.Visibility = Visibility.Hidden;
         }
 
@@ -79,7 +79,8 @@ namespace PremierLeagueDashboardApp
                 Fixture p = allFixturesList.fixtures.ElementAt(0); // last match
 
                 Stack<string> stack = new Stack<string>();
-                Stack<int> goalsStack = new Stack<int>();
+                Stack<int?> goalsPlusStack = new Stack<int?>();
+                Stack<int?> goalsMinusStack = new Stack<int?>();
 
                 foreach (Fixture f in allFixturesList.fixtures)
                 {
@@ -88,7 +89,7 @@ namespace PremierLeagueDashboardApp
                         // live match
                         if(f.status == "TIMED")
                         {
-                            nextFixtureGroupBox.Header = "Live matchday";
+                            nextFixtureGroupBox.Header = "Upcoming";
 
                             if(f.result.goalsHomeTeam != null && f.result.goalsAwayTeam != null)
                             {
@@ -103,32 +104,69 @@ namespace PremierLeagueDashboardApp
                         {
                             nextFixtureGroupBox.Header = "Next fixture";
                             resultTextBlock.Text = "- : -";
+                            calculateGoals(f, goalsPlusStack, goalsMinusStack);
                         }
 
                         // scheduled match
                         teamsTextBlock.Text = f.homeTeamName + " vs " + f.awayTeamName;
                         matchdayTextBlock.Text = "Matchday: " + f.matchday;
                         timeTextBlock.Text = f.date.Replace('T', ' ');
+                        if (ourTeamName == f.homeTeamName) venueTextBlock.Text = "HOME";
+                        else venueTextBlock.Text = "AWAY";
 
                         // last match
                         teamsLastTextBlock.Text = p.homeTeamName + " vs " + p.awayTeamName;
                         resultLastTextBlock.Text = p.result.goalsHomeTeam + " : " + p.result.goalsAwayTeam;
                         matchdayLastTextBlock.Text = "Matchday: " + p.matchday;
                         timeLastTextBlock.Text = p.date.Replace('T', ' ');
+                        if (ourTeamName == p.homeTeamName) venueLastTextBlock.Text = "HOME";
+                        else venueTextBlock.Text = "AWAY";
                         break;
                     }
                     else
                     {
+                        calculateGoals(f, goalsPlusStack, goalsMinusStack);
                         stack.Push(resultOfAMatch(f.result.goalsHomeTeam, f.result.goalsAwayTeam, f.homeTeamName));
                         p = f;
                     }
                 }
 
-                for (int i = 0; i < 5; i++)
+                initFormPanel(stack, goalsPlusStack, goalsMinusStack);
+            }
+        }
+
+        private void initFormPanel(Stack<string> stack, Stack<int?> goalsPlusStack, Stack<int?> goalsMinusStack)
+        {
+            int? plus = 0;
+            int? minus = 0;
+            formTextBlock.Text = "";
+
+            for (int i = 0; i < 5; i++)
+            {
+                if (stack.Any()) formTextBlock.Text = stack.Pop() + " " + formTextBlock.Text;
+                else break;
+
+                if (goalsPlusStack.Any() && goalsMinusStack.Any())
                 {
-                    if (stack.Any()) formTextBlock.Text = stack.Pop() + " " + formTextBlock.Text;
-                    else break;
+                    plus += goalsPlusStack.Pop();
+                    minus += goalsMinusStack.Pop();
                 }
+            }
+
+            goalsTextBlock.Text = "B+" + plus + " B-" + minus;
+        }
+
+        private void calculateGoals(Fixture f, Stack<int?> goalsPlusStack, Stack<int?> goalsMinusStack)
+        {
+            if(ourTeamName == f.homeTeamName)
+            {
+                goalsMinusStack.Push(f.result.goalsAwayTeam);
+                goalsPlusStack.Push(f.result.goalsHomeTeam);
+            }
+            else if(ourTeamName == f.awayTeamName)
+            {
+                goalsMinusStack.Push(f.result.goalsHomeTeam);
+                goalsPlusStack.Push(f.result.goalsAwayTeam);
             }
         }
 
@@ -160,6 +198,11 @@ namespace PremierLeagueDashboardApp
         private void table_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            Window_Initialized(button, e);
         }
     }
 }
