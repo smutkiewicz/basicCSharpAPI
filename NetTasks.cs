@@ -22,10 +22,10 @@ namespace PremierLeagueDashboardApp
             try
             {
                 HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("method", "GET");
-                client.DefaultRequestHeaders.Add("header", "X-Auth-Token: " + token);
-
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
                 HttpResponseMessage response = await client.GetAsync(adress);
+                Console.Out.WriteLine(response.Headers.ToString());
                 HttpContent content = response.Content;
                 string result = await content.ReadAsStringAsync();
 
@@ -49,8 +49,8 @@ namespace PremierLeagueDashboardApp
         public async static Task<AllFixtures> GetRecentFixtures()
         {
             HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("method", "GET");
-            client.DefaultRequestHeaders.Add("header", "X-Auth-Token: " + token);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+            client.DefaultRequestHeaders.Add("x-auth-token", token);
 
             HttpResponseMessage response = await client.GetAsync(fixtures);
             HttpContent content = response.Content;
@@ -72,9 +72,10 @@ namespace PremierLeagueDashboardApp
             try
             {
                 HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("method", "GET");
-                client.DefaultRequestHeaders.Add("header", "X-Auth-Token: " + token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
                 HttpResponseMessage response = await client.GetAsync(team);
+                Console.Out.WriteLine(response.Headers.ToString());
                 HttpContent content = response.Content;
                 string result = await content.ReadAsStringAsync();
 
@@ -100,8 +101,8 @@ namespace PremierLeagueDashboardApp
             try
             {
                 HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("method", "GET");
-                client.DefaultRequestHeaders.Add("header", "X-Auth-Token: " + token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
 
                 HttpResponseMessage response = await client.GetAsync(players);
                 HttpContent content = response.Content;
@@ -129,8 +130,8 @@ namespace PremierLeagueDashboardApp
             try
             {
                 HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("method", "GET");
-                client.DefaultRequestHeaders.Add("header", "X-Auth-Token: " + token);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
 
                 HttpResponseMessage response = await client.GetAsync(allFixtures);
                 HttpContent content = response.Content;
