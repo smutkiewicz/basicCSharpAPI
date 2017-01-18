@@ -84,28 +84,31 @@ namespace PremierLeagueDashboardApp
 
                 foreach (Fixture f in allFixturesList.fixtures)
                 {
-                    if (f.status == "SCHEDULED" || f.status == "TIMED")
+                    if (f.status == "FINISHED")
                     {
-                        // live match
-                        if(f.status == "TIMED")
-                        {
-                            nextFixtureGroupBox.Header = "Upcoming";
+                        calculateGoals(f, goalsPlusStack, goalsMinusStack);
+                        stack.Push(resultOfAMatch(f.result.goalsHomeTeam, f.result.goalsAwayTeam, f.homeTeamName));
+                        p = f;
+                    }
 
-                            if(f.result.goalsHomeTeam != null && f.result.goalsAwayTeam != null)
-                            {
-                                resultTextBlock.Text = f.result.goalsHomeTeam+" : "+f.result.goalsAwayTeam;
-                            }
-                            else
-                            {
-                                resultTextBlock.Text = "0 : 0";
-                            }
+                    if (f.status == "IN_PLAY")
+                    {
+                        nextFixtureGroupBox.Header = "Live matchday";
+
+                        if (f.result.goalsHomeTeam != null && f.result.goalsAwayTeam != null)
+                        {
+                            resultTextBlock.Text = f.result.goalsHomeTeam + " : " + f.result.goalsAwayTeam;
                         }
                         else
                         {
-                            nextFixtureGroupBox.Header = "Next fixture";
-                            resultTextBlock.Text = "- : -";
-                            calculateGoals(f, goalsPlusStack, goalsMinusStack);
+                            resultTextBlock.Text = "0 : 0";
                         }
+                    }
+
+                    if(f.status == "SCHEDULED" || f.status == "TIMED")
+                    {
+                        nextFixtureGroupBox.Header = "Next fixture";
+                        resultTextBlock.Text = "- : -";
 
                         // scheduled match
                         teamsTextBlock.Text = f.homeTeamName + " vs " + f.awayTeamName;
@@ -122,12 +125,6 @@ namespace PremierLeagueDashboardApp
                         if (ourTeamName == p.homeTeamName) venueLastTextBlock.Text = "HOME";
                         else venueTextBlock.Text = "AWAY";
                         break;
-                    }
-                    else
-                    {
-                        calculateGoals(f, goalsPlusStack, goalsMinusStack);
-                        stack.Push(resultOfAMatch(f.result.goalsHomeTeam, f.result.goalsAwayTeam, f.homeTeamName));
-                        p = f;
                     }
                 }
 
@@ -153,7 +150,7 @@ namespace PremierLeagueDashboardApp
                 }
             }
 
-            goalsTextBlock.Text = "B+" + plus + " B-" + minus;
+            goalsTextBlock.Text = "G+" + plus + " G-" + minus;
         }
 
         private void calculateGoals(Fixture f, Stack<int?> goalsPlusStack, Stack<int?> goalsMinusStack)
