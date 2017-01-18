@@ -90,23 +90,22 @@ namespace PremierLeagueDashboardApp
                         stack.Push(resultOfAMatch(f.result.goalsHomeTeam, f.result.goalsAwayTeam, f.homeTeamName));
                         p = f;
                     }
-
-                    if (f.status == "IN_PLAY")
+                    else //if(f.status == "SCHEDULED" || f.status == "TIMED" || f.status == "IN_PLAY")
                     {
-                        nextFixtureGroupBox.Header = "Live matchday";
-
-                        if (f.result.goalsHomeTeam != null && f.result.goalsAwayTeam != null)
+                        if (f.status == "IN_PLAY")
                         {
-                            resultTextBlock.Text = f.result.goalsHomeTeam + " : " + f.result.goalsAwayTeam;
-                        }
-                        else
-                        {
-                            resultTextBlock.Text = "0 : 0";
-                        }
-                    }
+                            nextFixtureGroupBox.Header = "Live matchday";
 
-                    if(f.status == "SCHEDULED" || f.status == "TIMED")
-                    {
+                            if (f.result.goalsHomeTeam != null && f.result.goalsAwayTeam != null)
+                            {
+                                resultTextBlock.Text = f.result.goalsHomeTeam + " : " + f.result.goalsAwayTeam;
+                            }
+                            else
+                            {
+                                resultTextBlock.Text = "0 : 0";
+                            }
+                        }
+
                         nextFixtureGroupBox.Header = "Next fixture";
                         resultTextBlock.Text = "- : -";
 
