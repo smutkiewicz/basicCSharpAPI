@@ -1,0 +1,11 @@
+# basicCSharpAPI
+
+** what's that?
+   Basic WPF app using web API for data source
+** wait, what? 
+   Inspired from one of the prelections on .NET WUT Group. It uses external API (JSON parsing from http://api.football-data.org/index) for realtime football scores, personalised for English Premier League team, Manchester United (ggmu yay!). Technology used is C# and simple Windows Presentation Foundation, which lets quite neatly present parsed data.
+** how to use it?
+   At the moment I haven't got a proper installer, just because I don't need it - I've got it installed directly from Visual Studio
+   
+** author
+Michał Smutkiewicz
