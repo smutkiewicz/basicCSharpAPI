@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace WpfApplication1
+namespace PremierLeagueDashboardApp
 {
     public class Parser
     {

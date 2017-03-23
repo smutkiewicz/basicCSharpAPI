@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WpfApplication1
+namespace PremierLeagueDashboardApp
 {
     public class Fixture
     {
         public int id { get; set; }
-        public string competition { get; set; }
+        public Uri competition { get; set; }
         public int competitionId { get; set; }
         public string date { get; set; }
         public string status { get; set; }

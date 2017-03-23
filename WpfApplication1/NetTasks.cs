@@ -5,8 +5,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
-namespace WpfApplication1
+namespace PremierLeagueDashboardApp
 {
     public static class NetTasks
     {
@@ -18,18 +19,29 @@ namespace WpfApplication1
         private static string token = "c0c635206a9849bebe228e82931338f8";
         public async static Task<Table> GetTable()
         {
-            //var authValue = new AuthenticationHeaderValue("X-Auth-Token", "c0c635206a9849bebe228e82931338f8");
-            HttpClient client = new HttpClient();
-            HttpResponseMessage response = await client.GetAsync(adress);
-            HttpContent content = response.Content;
-            string result = await content.ReadAsStringAsync();
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
+                HttpResponseMessage response = await client.GetAsync(adress);
+                Console.Out.WriteLine(response.Headers.ToString());
+                HttpContent content = response.Content;
+                string result = await content.ReadAsStringAsync();
 
-            if (result != null)
-            {
-                return Parser.ParseTable(result);
+                if (result != null)
+                {
+                    return Parser.ParseTable(result);
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch
             {
+                MessageBox.Show("Loading table failed. Try later.",
+                    "Connection failed");
                 return null;
             }
         }
@@ -37,8 +49,9 @@ namespace WpfApplication1
         public async static Task<AllFixtures> GetRecentFixtures()
         {
             HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-Auth-Token", token);
-            client.DefaultRequestHeaders.Add("X-Response-Control", "minified");
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+            client.DefaultRequestHeaders.Add("x-auth-token", token);
+
             HttpResponseMessage response = await client.GetAsync(fixtures);
             HttpContent content = response.Content;
             string result = await content.ReadAsStringAsync();
@@ -56,57 +69,87 @@ namespace WpfApplication1
 
         public async static Task<Team> GetTeam()
         {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-Auth-Token", token);
-            client.DefaultRequestHeaders.Add("X-Response-Control", "minified");
-            HttpResponseMessage response = await client.GetAsync(team);
-            HttpContent content = response.Content;
-            string result = await content.ReadAsStringAsync();
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
+                HttpResponseMessage response = await client.GetAsync(team);
+                Console.Out.WriteLine(response.Headers.ToString());
+                HttpContent content = response.Content;
+                string result = await content.ReadAsStringAsync();
 
-            if (result != null)
-            {
-                return Parser.ParseTeam(result);
+                if (result != null)
+                {
+                    return Parser.ParseTeam(result);
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch
             {
+                MessageBox.Show("Loading team failed. Try later.",
+                    "Connection failed");
                 return null;
             }
         }
 
         public async static Task<TeamPlayers> GetPlayers()
         {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-Auth-Token", token);
-            client.DefaultRequestHeaders.Add("X-Response-Control", "minified");
-            HttpResponseMessage response = await client.GetAsync(players);
-            HttpContent content = response.Content;
-            string result = await content.ReadAsStringAsync();
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
 
-            if (result != null)
-            {
-                return Parser.ParsePlayers(result);
+                HttpResponseMessage response = await client.GetAsync(players);
+                HttpContent content = response.Content;
+                string result = await content.ReadAsStringAsync();
+
+                if (result != null)
+                {
+                    return Parser.ParsePlayers(result);
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch
             {
+                MessageBox.Show("Loading team players failed. Try later.",
+                    "Connection failed");
                 return null;
             }
         }
 
         public async static Task<AllFixtures> GetAllFixtures()
         {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("X-Auth-Token", token);
-            client.DefaultRequestHeaders.Add("X-Response-Control", "minified");
-            HttpResponseMessage response = await client.GetAsync(allFixtures);
-            HttpContent content = response.Content;
-            string result = await content.ReadAsStringAsync();
+            try
+            {
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                client.DefaultRequestHeaders.Add("x-auth-token", token);
 
-            if(result != null)
-            {
-                return Parser.ParseAllFixtures(result);
+                HttpResponseMessage response = await client.GetAsync(allFixtures);
+                HttpContent content = response.Content;
+                string result = await content.ReadAsStringAsync();
+
+                if (result != null)
+                {
+                    return Parser.ParseAllFixtures(result);
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch
             {
+                MessageBox.Show("Loading fixtures failed. Try later.",
+                    "Connection failed");
                 return null;
             }
         }

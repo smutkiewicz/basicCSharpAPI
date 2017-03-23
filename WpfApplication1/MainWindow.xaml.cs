@@ -1,19 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace WpfApplication1
+namespace PremierLeagueDashboardApp
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -28,7 +19,6 @@ namespace WpfApplication1
 
         public Table tableList;
         public AllFixtures allFixturesList;
-        public AllFixtures recentFixtures;
         public Team team;
         public TeamPlayers teamPlayers;
         public static string ourTeamName;
@@ -36,17 +26,22 @@ namespace WpfApplication1
         private async void Window_Initialized(object sender, EventArgs e)
         {
             ourTeamName = "Manchester United FC";
-            allFixturesList = await NetTasks.GetAllFixtures();
-            initFixturesPanel();
-
-            team = await NetTasks.GetTeam();
-            initTeam();
-
-            teamPlayers = await NetTasks.GetPlayers();
-            initPlayersList();
-
-            tableList = await NetTasks.GetTable();
-            initTable();
+            try
+            {
+                allFixturesList = await NetTasks.GetAllFixtures();
+                initFixturesPanel();
+                team = await NetTasks.GetTeam();
+                initTeam();
+                teamPlayers = await NetTasks.GetPlayers();
+                initPlayersList();
+                tableList = await NetTasks.GetTable();
+                initTable();
+            }
+            catch
+            {
+                MessageBox.Show("You've probably reached your request limit or have problems with connection. Try later.", 
+                    "Connection failed");
+            }
 
             progressBar.Visibility = Visibility.Hidden;
         }
@@ -64,12 +59,7 @@ namespace WpfApplication1
         {
             if (tableList.standing != null)
             {
-                foreach (Club c in tableList.standing)
-                {
-                    ListViewItem item = new ListViewItem();
-                    item.Content = c.toString();
-                    table.Items.Add(item);
-                }
+                table.ItemsSource = tableList.standing;
             }
         }
 
@@ -78,6 +68,7 @@ namespace WpfApplication1
             if(teamPlayers != null)
             {
                 dataGrid.ItemsSource = teamPlayers.players;
+                dataGrid.IsReadOnly = true;
             }
         }
 
@@ -85,37 +76,93 @@ namespace WpfApplication1
         {
             if (allFixturesList.fixtures != null)
             {
-                Fixture p = allFixturesList.fixtures.ElementAt(0);
+                Fixture p = allFixturesList.fixtures.ElementAt(0); // last match
 
                 Stack<string> stack = new Stack<string>();
+                Stack<int?> goalsPlusStack = new Stack<int?>();
+                Stack<int?> goalsMinusStack = new Stack<int?>();
 
                 foreach (Fixture f in allFixturesList.fixtures)
                 {
-                    if (f.status == "SCHEDULED")
+                    if (f.status == "FINISHED" || f.status == "POSTPONED")
                     {
+                        calculateGoals(f, goalsPlusStack, goalsMinusStack);
+                        stack.Push(resultOfAMatch(f.result.goalsHomeTeam, f.result.goalsAwayTeam, f.homeTeamName));
+                        p = f;
+                    }
+                    else //if(f.status == "SCHEDULED" || f.status == "TIMED" || f.status == "IN_PLAY")
+                    {
+                        if (f.status == "IN_PLAY")
+                        {
+                            nextFixtureGroupBox.Header = "Live matchday";
+
+                            if (f.result.goalsHomeTeam != null && f.result.goalsAwayTeam != null)
+                            {
+                                resultTextBlock.Text = f.result.goalsHomeTeam + " : " + f.result.goalsAwayTeam;
+                            }
+                            else
+                            {
+                                resultTextBlock.Text = "0 : 0";
+                            }
+                        }
+
+                        nextFixtureGroupBox.Header = "Next fixture";
+                        resultTextBlock.Text = "- : -";
+
+                        // scheduled match
                         teamsTextBlock.Text = f.homeTeamName + " vs " + f.awayTeamName;
-                        resultLastTextBlock.Text = "- : -";
                         matchdayTextBlock.Text = "Matchday: " + f.matchday;
                         timeTextBlock.Text = f.date.Replace('T', ' ');
+                        if (ourTeamName == f.homeTeamName) venueTextBlock.Text = "HOME";
+                        else venueTextBlock.Text = "AWAY";
 
+                        // last match
                         teamsLastTextBlock.Text = p.homeTeamName + " vs " + p.awayTeamName;
                         resultLastTextBlock.Text = p.result.goalsHomeTeam + " : " + p.result.goalsAwayTeam;
                         matchdayLastTextBlock.Text = "Matchday: " + p.matchday;
                         timeLastTextBlock.Text = p.date.Replace('T', ' ');
+                        if (ourTeamName == p.homeTeamName) venueLastTextBlock.Text = "HOME";
+                        else venueLastTextBlock.Text = "AWAY";
                         break;
-                    }
-                    else
-                    {
-                        stack.Push(resultOfAMatch(f.result.goalsHomeTeam, f.result.goalsAwayTeam, f.homeTeamName));
-                        p = f;
                     }
                 }
 
-                for (int i = 0; i < 6; i++)
+                initFormPanel(stack, goalsPlusStack, goalsMinusStack);
+            }
+        }
+
+        private void initFormPanel(Stack<string> stack, Stack<int?> goalsPlusStack, Stack<int?> goalsMinusStack)
+        {
+            int? plus = 0;
+            int? minus = 0;
+            formTextBlock.Text = "";
+
+            for (int i = 0; i < 5; i++)
+            {
+                if (stack.Any()) formTextBlock.Text = stack.Pop() + " " + formTextBlock.Text;
+                else break;
+
+                if (goalsPlusStack.Any() && goalsMinusStack.Any())
                 {
-                    if (stack.Any()) formTextBlock.Text = stack.Pop() + " " + formTextBlock.Text;
-                    else break;
+                    plus += goalsPlusStack.Pop();
+                    minus += goalsMinusStack.Pop();
                 }
+            }
+
+            goalsTextBlock.Text = "G+" + plus + " G-" + minus;
+        }
+
+        private void calculateGoals(Fixture f, Stack<int?> goalsPlusStack, Stack<int?> goalsMinusStack)
+        {
+            if(ourTeamName == f.homeTeamName)
+            {
+                goalsMinusStack.Push(f.result.goalsAwayTeam);
+                goalsPlusStack.Push(f.result.goalsHomeTeam);
+            }
+            else if(ourTeamName == f.awayTeamName)
+            {
+                goalsMinusStack.Push(f.result.goalsHomeTeam);
+                goalsPlusStack.Push(f.result.goalsAwayTeam);
             }
         }
 
@@ -139,14 +186,19 @@ namespace WpfApplication1
             }
         }
 
-        private void dataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void progressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
 
         }
 
-        private void progressBar_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void table_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        private void button_Click(object sender, RoutedEventArgs e)
+        {
+            Window_Initialized(button, e);
         }
     }
 }
